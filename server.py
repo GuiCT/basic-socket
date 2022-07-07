@@ -5,7 +5,7 @@ from time import sleep
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Bindando o socket a porta 51268
 server_socket.bind(('', 51268))
-# Colocando o socket para escutar (no máximo 3 conexões concorrentes)
+# Colocando o socket para escutar (no máximo 1 conexões concorrentes)
 server_socket.listen(1)
 # Utilizando loop infinito para tratar as conexões
 while True:
