@@ -48,6 +48,10 @@ class Server:
         client = Client(c_socket, c_address)
         # Inclui o cliente na lista de clientes
         self.list_of_clients.append(client)
+        # Mostra mensagem de aceitação de conexão
+        print('Cliente conectado: (%s:%s)' % (
+            c_address[0],
+            c_address[1]))
         # Inicia uma thread para tratar a conexão do novo cliente,
         # passando o cliente como argumento.
         # A thread só é encerrada quando handle_connection termina. 
@@ -78,10 +82,13 @@ class Server:
         while True:
             # Recebe o char
             char = client.socket.recv(1)
-            # CARRIAGE RETURN -> Ignora o próximo caractere (\n, line-end)
-            # e conclui a recepção
-            if char == b'\r':
-                client.socket.recv(1)
+            # LINE FEED -> Faz tratamento para garantir compatibilidade
+            # com Linux e outros SOs. Se o char anterior for um
+            # CARRIAGE RETURN, o mesmo é retirado do array de bytes.
+            # Conclui a recepção
+            if char == b'\n':
+                if msg[-1] == 13:
+                    msg = msg[:-1]
                 break
             # BACKSPACE -> Remove o último caracetere do array de bytes
             elif char == b'\b':
@@ -89,6 +96,11 @@ class Server:
             # QUALQUER OUTRO CARACTERE -> Adiciona ao array de bytes
             else:
                 msg += char
+        # Mostra mensagem recebida pelo cliente
+        print('Recebido do cliente (%s:%s): "%s"' % (
+            client.address[0],
+            client.address[1],
+            msg.decode('ascii')))
         # Retorna o array de bytes recebido
         return msg
     
@@ -99,6 +111,12 @@ class Server:
         msg_in_bytes = msg.encode('ascii')
         # Envia mensagem ao soquete do cliente
         client.socket.send(msg_in_bytes)
+        # Mostrando a mensagem enviada no console do servidor
+        # Deixa explícito onde é utilizado \r ou \n
+        print('Enviado ao cliente (%s:%s): "%s"' % (
+            client.address[0],
+            client.address[1],
+            msg.replace('\n', '\\n').replace('\r', '\\r')))
     
     # Método que encerra conexão com o cliente
     def close_connection(self, client : Client):
@@ -106,6 +124,10 @@ class Server:
         self.list_of_clients.remove(client)
         # Fecha o soquete do cliente
         client.socket.close()
+        # Mostra mensagem de encerramento de conexão
+        print('Conexão com cliente (%s:%s) encerrada' % (
+            client.address[0],
+            client.address[1]))
 
     # Decide o que fazer com uma mensagem recebida do cliente
     def handle_client_message(self, client : Client, msg : bytes):
