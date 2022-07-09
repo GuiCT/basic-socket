@@ -1,6 +1,6 @@
 import socket
 
 class Client:
-    def __init__(self, socket : socket.socket, address):
+    def __init__(self, socket : socket.socket, address : socket._RetAddress):
         self.socket = socket
         self.address = address
